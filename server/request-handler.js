@@ -18,7 +18,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
-var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby' }]};
+var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby', createdAt: '7/25/2017, 11:52:57 AM' }]};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -96,7 +96,6 @@ var requestHandler = function(request, response) {
       var requestBody = '';
       request.on('data', function(chunk) {
         requestBody += chunk.toString();
-        console.log('requestBody: ', requestBody); 
         requestBody = '{"' + requestBody + '"}';
         requestBody = requestBody.split('');
         for (var i = 0; i < requestBody.length; i++) {
@@ -109,20 +108,11 @@ var requestHandler = function(request, response) {
           if (requestBody[i] === '+') {
             requestBody.splice(i, 1, ' ');
           }
-          // if (requestBody[i] === '%2B') {
-          //   requestBody.splice(i, 3, '+');
-          // }
-          // if (requestBody[i] === '%26') {
-          //   requestBody.splice(i, 3, '&');
-          // }
-          // if (requestBody[i] === '%3D') {
-          //   requestBody.splice(i, 3, '=');
-          // }
         }
         requestBody = requestBody.join('');
-        console.log('requestBody: ', requestBody); 
-        messages.results.push(JSON.parse(requestBody));
-        console.log('messages: ', messages);
+        var parsedBody = JSON.parse(requestBody);
+        parsedBody.createdAt = new Date().toLocaleString();
+        messages.results.push(parsedBody);
         response.end(JSON.stringify(messages.results));
       });
     }
