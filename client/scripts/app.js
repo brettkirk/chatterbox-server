@@ -59,7 +59,7 @@ var app = {
     $.ajax({
       url: app.server,
       type: 'GET',
-      // data: { order: '-createdAt' },
+      data: { order: '-createdAt' },
       contentType: 'application/json',
       success: function(data) {
         // Don't bother if we have nothing to work with
@@ -77,7 +77,7 @@ var app = {
           app.renderRoomList(data.results);
 
           // Update the UI with the fetched messages
-          app.renderMessages(data.results.reverse(), animate);
+          app.renderMessages(data.results, animate);
 
           // Store the ID of the most recent message
           app.lastMessageId = mostRecentMessage.objectId;

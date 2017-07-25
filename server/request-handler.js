@@ -18,7 +18,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
-var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby', createdAt: '7/25/2017, 11:52:57 AM', objectId: 1501009400000 }]};
+var messages = {results: [{ username: 'ChatBot', text: 'Welcome to the chatroom', roomname: 'lobby', createdAt: '7/25/2017, 11:52:57 AM', objectId: 1501009400000 }]};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -74,14 +74,14 @@ var requestHandler = function(request, response) {
 
 
   if (request.method === 'OPTIONS') {
-    if (request.url === '/classes/messages') {
+    if (request.url.slice(0, 17) === '/classes/messages') {
       response.writeHead(200, headers);
       response.end();
     }
   }
 
   if (request.method === 'GET') {
-    if (request.url === '/classes/messages') {
+    if (request.url.slice(0, 17) === '/classes/messages') {
       response.writeHead(200, headers);
       response.end(JSON.stringify(messages));
     } else {
@@ -91,25 +91,27 @@ var requestHandler = function(request, response) {
   }
   
   if (request.method === 'POST') {
-    if (request.url === '/classes/messages') {
+    if (request.url.slice(0, 17) === '/classes/messages') {
       response.writeHead(201, headers);
       var requestBody = '';
       request.on('data', function(chunk) {
         requestBody += chunk.toString();
-        requestBody = '{"' + requestBody + '"}';
-        requestBody = requestBody.split('');
-        for (var i = 0; i < requestBody.length; i++) {
-          if (requestBody[i] === '=') {
-            requestBody.splice(i, 1, '": "');
+        if (requestBody[0] !== '{') {
+          requestBody = '{"' + requestBody + '"}';
+          requestBody = requestBody.split('');
+          for (var i = 0; i < requestBody.length; i++) {
+            if (requestBody[i] === '=') {
+              requestBody.splice(i, 1, '": "');
+            }
+            if (requestBody[i] === '&') {
+              requestBody.splice(i, 1, '", "');
+            }
+            if (requestBody[i] === '+') {
+              requestBody.splice(i, 1, ' ');
+            }
           }
-          if (requestBody[i] === '&') {
-            requestBody.splice(i, 1, '", "');
-          }
-          if (requestBody[i] === '+') {
-            requestBody.splice(i, 1, ' ');
-          }
+          requestBody = requestBody.join('');
         }
-        requestBody = requestBody.join('');
         var parsedBody = JSON.parse(requestBody);
         parsedBody.createdAt = new Date().toLocaleString();
         parsedBody.objectId = Date.now();
