@@ -18,6 +18,8 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var messages = {results: []};
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -26,13 +28,28 @@ var requestHandler = function(request, response) {
   // and content.
   //
   // Documentation for both request and response can be found in the HTTP section at
-  // http://nodejs.org/documentation/api/
+  // http://nodejs.org/documentation/api/         && request.url === '/classes/messages'
   
-  if (request.method === 'GET' && request.url === '/classes/messages') {
-    console.log(request.method);
-    
-  }
-
+  
+  // var message1 = {
+  //   createdAt: '2017-06-25T19:00:06.705Z',
+  //   objectId: 'jSxKdWnQPZ',
+  //   username: 'anonymous',
+  //   roomname: 'lobby',
+  //   text: 'here is a test',
+  //   updatedAt: '2017-06-25T19:00:06.705Z'
+  // };
+  
+  // var message2 = {
+  //   createdAt: '2017-06-25T19:00:07.705Z',
+  //   objectId: 'jSxKdWnQZZ',
+  //   username: 'billy',
+  //   roomname: 'lobby',
+  //   text: 'here is a test',
+  //   updatedAt: '2017-06-25T19:00:07.705Z'
+  // };
+  
+  
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
@@ -54,8 +71,34 @@ var requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  // response.writeHead(statusCode, headers);
 
+  if (request.method === 'GET') {
+    if (request.url === '/classes/messages') {
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify(messages));
+    } else {
+      statusCode = 404;
+      response.writeHead(statusCode, headers);
+      response.end();
+    }
+  }
+  
+  if (request.method === 'POST') {
+    if (request.url === '/classes/messages') {
+      response.writeHead(201, headers);
+      var requestBody = '';
+      request.on('data', function(chunk) {
+        requestBody += chunk.toString();
+        console.log('requestBody: ', requestBody); 
+        messages.results.push(JSON.parse(requestBody));
+        console.log('messages: ', messages);
+        response.end(JSON.stringify(messages.results));
+      });
+    }
+  }
+
+  
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -63,7 +106,7 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  // response.end('Hello, World!');
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
