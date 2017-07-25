@@ -18,7 +18,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
-var messages = {results: []};
+var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby' }]};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -58,7 +58,6 @@ var requestHandler = function(request, response) {
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
   // The outgoing status.
-  var statusCode = 200;
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -73,13 +72,20 @@ var requestHandler = function(request, response) {
   // which includes the status and all headers.
   // response.writeHead(statusCode, headers);
 
+
+  if (request.method === 'OPTIONS') {
+    if (request.url === '/classes/messages') {
+      response.writeHead(200, headers);
+      response.end();
+    }
+  }
+
   if (request.method === 'GET') {
     if (request.url === '/classes/messages') {
-      response.writeHead(statusCode, headers);
+      response.writeHead(200, headers);
       response.end(JSON.stringify(messages));
     } else {
-      statusCode = 404;
-      response.writeHead(statusCode, headers);
+      response.writeHead(404, headers);
       response.end();
     }
   }
@@ -91,13 +97,36 @@ var requestHandler = function(request, response) {
       request.on('data', function(chunk) {
         requestBody += chunk.toString();
         console.log('requestBody: ', requestBody); 
+        requestBody = '{"' + requestBody + '"}';
+        requestBody = requestBody.split('');
+        for (var i = 0; i < requestBody.length; i++) {
+          if (requestBody[i] === '=') {
+            requestBody.splice(i, 1, '": "');
+          }
+          if (requestBody[i] === '&') {
+            requestBody.splice(i, 1, '", "');
+          }
+          if (requestBody[i] === '+') {
+            requestBody.splice(i, 1, ' ');
+          }
+          // if (requestBody[i] === '%2B') {
+          //   requestBody.splice(i, 3, '+');
+          // }
+          // if (requestBody[i] === '%26') {
+          //   requestBody.splice(i, 3, '&');
+          // }
+          // if (requestBody[i] === '%3D') {
+          //   requestBody.splice(i, 3, '=');
+          // }
+        }
+        requestBody = requestBody.join('');
+        console.log('requestBody: ', requestBody); 
         messages.results.push(JSON.parse(requestBody));
         console.log('messages: ', messages);
         response.end(JSON.stringify(messages.results));
       });
     }
   }
-
   
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
