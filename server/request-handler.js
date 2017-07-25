@@ -18,7 +18,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
-var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby', createdAt: '7/25/2017, 11:52:57 AM' }]};
+var messages = {results: [{ username: 'anonymous', text: 'Welcome to the chatroom', roomname: 'lobby', createdAt: '7/25/2017, 11:52:57 AM', objectId: 1501009400000 }]};
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -112,6 +112,7 @@ var requestHandler = function(request, response) {
         requestBody = requestBody.join('');
         var parsedBody = JSON.parse(requestBody);
         parsedBody.createdAt = new Date().toLocaleString();
+        parsedBody.objectId = Date.now();
         messages.results.push(parsedBody);
         response.end(JSON.stringify(messages.results));
       });
